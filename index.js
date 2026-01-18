@@ -32,9 +32,8 @@ const fetchGithubUserEvents = async (username) => {
       "Content-Type": "application/json",
     };
     const response = await fetch(url, header);
-    // console.log(response);
 
-    if (!response.ok) throw new Error("could not fetch resource");
+    if (!response.ok) throw new Error("Could not fetch resource");
     return response.json();
   } catch (error) {
     return console.error(error);
@@ -58,52 +57,61 @@ const repoCompareData = async (repo, head, base) => {
 };
 
 // Respond to terminal
-fetchGithubUserEvents(argv[2]).then((event) => {
-  event.forEach((item) => {
-    switch (item.type) {
-      case "PushEvent":
-        repoCompareData(
-          item.repo.name,
-          item.payload.head,
-          item.payload.before
-        ).then((res) =>
+if (!argv[2]) {
+  console.error(
+    `Please provide a valid GitHub Username \nUsage: 'github-activity <username>'`
+  );
+} else {
+  fetchGithubUserEvents(argv[2]).then((event) => {
+    event.forEach((item) => {
+      switch (item.type) {
+        case "PushEvent":
+          repoCompareData(
+            item.repo.name,
+            item.payload.head,
+            item.payload.before
+          ).then((res) =>
+            console.log(
+              `Pushed ${res.total_commits} commits to ${item.repo.name}`
+            )
+          );
+          break;
+        case "IssueEvent":
           console.log(
-            `Pushed ${res.total_commits} commits to ${item.repo.name}`
-          )
-        );
-        break;
-      case "IssueEvent":
-        console.log(
-          `${
-            item.payload.action[0].toUpperCase() + item.payload.action.slice(1)
-          } an issue in ${item.repo.name}`
-        );
-        break;
-      case "IssueCommentEvent":
-        console.log(
-          `${
-            item.payload.action[0].toUpperCase() + item.payload.action.slice(1)
-          } an issue comment in ${item.repo.name}`
-        );
-        break;
-      case "CreateEvent":
-        console.log(`Created ${item.repo.name}`);
-        break;
-      case "ForkEvent":
-        console.log(`Forked ${item.repo.name}`);
-        break;
-      case "PullRequestEvent":
-        console.log(
-          `${
-            item.payload.action[0].toUpperCase() + item.payload.action.slice(1)
-          } a pull request in ${item.repo.name}`
-        );
-        break;
-      case "WatchEvent":
-        console.log(`Starred ${item.repo.name}`);
-        break;
-      default:
-        break;
-    }
+            `${
+              item.payload.action[0].toUpperCase() +
+              item.payload.action.slice(1)
+            } an issue in ${item.repo.name}`
+          );
+          break;
+        case "IssueCommentEvent":
+          console.log(
+            `${
+              item.payload.action[0].toUpperCase() +
+              item.payload.action.slice(1)
+            } an issue comment in ${item.repo.name}`
+          );
+          break;
+        case "CreateEvent":
+          console.log(`Created ${item.repo.name}`);
+          break;
+        case "ForkEvent":
+          console.log(`Forked ${item.repo.name}`);
+          break;
+        case "PullRequestEvent":
+          console.log(
+            `${
+              item.payload.action[0].toUpperCase() +
+              item.payload.action.slice(1)
+            } a pull request in ${item.repo.name}`
+          );
+          break;
+        case "WatchEvent":
+          console.log(`Starred ${item.repo.name}`);
+          break;
+        default:
+          break;
+      }
+    });
   });
-});
+}
